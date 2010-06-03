@@ -10,6 +10,9 @@ from pyvcs.exceptions import CommitDoesNotExist, FileDoesNotExist, FolderDoesNot
 from pyvcs.repository import BaseRepository
 from pyvcs.utils import generate_unified_diff
 
+def init_new(path):
+    Repo.init(path)
+    return Repository(path)
 
 def traverse_tree(repo, tree):
     for mode, name, sha in tree.entries():
@@ -86,7 +89,10 @@ class Repository(BaseRepository):
 
     def get_recent_commits(self, since=None):
         if since is None:
-            since = datetime.fromtimestamp(self._repo.commit(self._repo.head()).commit_time) - timedelta(days=5)
+            try:
+                since = datetime.fromtimestamp(self._repo.commit(self._repo.head()).commit_time) - timedelta(days=5)
+            except KeyError:
+                return None
         pending_commits = self._repo.get_refs().values()#[self._repo.head()]
         history = {}
         while pending_commits:

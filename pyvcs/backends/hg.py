@@ -11,6 +11,10 @@ from pyvcs.exceptions import CommitDoesNotExist, FileDoesNotExist, FolderDoesNot
 from pyvcs.repository import BaseRepository
 from pyvcs.utils import generate_unified_diff
 
+def init_new(path):
+    hg_repo(ui.ui(), path=path, create=True)
+    return Repository(path)
+
 class Repository(BaseRepository):
     def __init__(self, path, **kwargs):
         """
@@ -47,7 +51,10 @@ class Repository(BaseRepository):
         from the last 5 days of commits.
         """
         cur_ctx = self.repo.changectx(self.repo.changelog.rev(self.repo.changelog.tip()))
-
+        
+        if cur_ctx.rev() == -1:
+            return None
+        
         if since is None:
             since = datetime.fromtimestamp(cur_ctx.date()[0]) - timedelta(5)
 
